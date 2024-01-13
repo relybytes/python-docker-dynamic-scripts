@@ -1,77 +1,119 @@
-# Project
+# Python docker dynamic scripts
 
-Here must be the summary of the description of this project. 
-This description must answer these questions:
-- What is?
-- Who uses this project?
-- Where it is used?
-- When is necessary?
-- Why is developed?
-- What are the main functionalities?
+## Overview
 
-Note: each title can be extended with subtitles according to the complexity of the project
+This repository is a Docker-based solution from Relybytes Srl designed for executing Python scripts dynamically. It allows for script execution via environment variables without the need for traditional building or releasing processes. This tool is particularly useful for developers and system administrators in scenarios requiring quick, adaptable script execution, such as automated tasks or DevOps pipelines.
 
-# Summary
+### Key Features
+
+- **Dynamic Script Execution**: Execute Python scripts directly from environment variables.
+- **Cron Job Management**: Schedule script executions efficiently using cron jobs.
+
+## Usage
+
+Details on how to use this Docker image will be provided, including examples for various environments such as Kubernetes, Docker Compose, and VPS setups.
+
+### Docker Compose Example
+
+This example shows how to use the image with Docker Compose:
+
+```yaml
+version: "3.8"
+services:
+  python-app:
+    build: .
+    environment:
+      OS_ADDITIONAL_PACKAGES:
+      PIP_REQUIREMENTS:
+      CRON_SCHEDULE: "*/1 * * * *"
+      SCRIPT_CONTENT: |
+        from datetime import datetime
+        import some_python_library
+
+        print(f"Current date and time: {datetime.now()}")
+```
+
+### Kubernetes Installation Example
+
+To deploy this image in a Kubernetes cluster, use the following configuration as an example:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-app
+  template:
+    metadata:
+      labels:
+        app: python-app
+    spec:
+      containers:
+        - name: python
+          image: ghcr.io/relybytes/nginx-certbot:v1.0.0
+          env:
+            - name: OS_ADDITIONAL_PACKAGES
+              value:
+            - name: PIP_REQUIREMENTS
+              value:
+            - name: CRON_SCHEDULE
+              value: "*/1 * * * *"
+            - name: SCRIPT_CONTENT
+              value: |
+                from datetime import datetime
+                import some_python_library
+
+                print(f"Current date and time: {datetime.now()}")
+```
+
+## Table of Contents
 
 1. [Architecture](#architecture)
-2. [Repository](#repository)
+2. [Repository Structure](#repository-structure)
 3. [Installation](#installation)
-4. [Build](#build)
-5. [Run](#run)
-6. [Deploy](#deploy)
-7. [Test](#test)
-8. [Documentation](#documentation)
-9. [Team](#team)
+4. [Build Instructions](#build-instructions)
+5. [Running Locally](#running-locally)
+6. [Deployment](#deployment)
+7. [Testing](#testing)
+8. [Further Documentation](#further-documentation)
+9. [About the Team](#about-the-team)
 
-# Architecture
+## Architecture
 
-This section should help the developer to understand how the project works physically
-In this section, it helps a lot to have an image or a graph (made for example using a mermaid) that helps to understand quickly the context and how it interacts with the real world
+This section will provide insights into the architecture of `docker-python-env-script`, demonstrating its adaptability in various scenarios, including Kubernetes clusters, Docker Compose setups, and remote execution on VPS.
 
-# Repository
+## Repository Structure
 
-This section should explain how the repository is structured, also at the code level (classes/folders).
-Also any links to other repositories (submodules).
+- **examples/**: Docker-compose examples ready for production.
+- **docker-compose.yml**: Local file for testing and building the image.
+- **Dockerfile**: Builds the Docker image.
+- **requirements.txt**: Lists minimal requirements for basic scripts.
+- **execute.py**: Contains the job manager and executor.
 
-This is a basic structure:
-* **folder1** -> this folder contains ...
+## Installation
 
-The folders obviously must be present if they are needed (if for example there are no scripts, the folder will not be present either)
+To develop locally, you need Docker or Docker Compose installed on your machine.
 
-# Installation
+## Build Instructions
 
-The following information must be present:
-- physical requirements of the machine to carry out the project 
-- application requirements (dependencies) with the specific versions 
-- steps to install the development environment and be ready to program 
+Build the image locally using the command: `docker build . -t docker-python-env-script:local`.
 
-In addition, there must be information about the recommended IDE/Tools needed or recommended to use
+## Running Locally
 
-# Build
+Run the image locally with: `docker-compose up --build`.
 
-The commands and steps to perform the build of the package, to be released, must be present in this section
+## Deployment
 
-# Run
+For deployment instructions, refer to the `examples` directory in the repository.
 
-The commands and steps to perform the run of the application (for developers)
+## Testing
 
-# Deploy
+Test the functionality by running the Docker image and observing the output logs.
 
-This section must have the information present in order to release.
-If a procedure already exists, indicate the document and how to retrieve it
+## Further Documentation
 
-# Test
-
-The section should include information about the test strategy used and how to perform it
-
-# Documentation
-
-This section may contain information relating to:
-- attached documents (datasheets, images, etc.)
-- references to requirements
-- useful documentation
-
-# Team
-
-This section is optional. It is necessary if there are information needed to introduce a person to the project or if there is a training program
-
+For guidance on writing Python scripts, visit [Python's Official Tutorial](https://docs.python.org/3/tutorial/index.html). The project is maintained by [Relybytes Srl](www.relybytes.com).

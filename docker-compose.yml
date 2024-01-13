@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  python-app:
+    build: .
+    environment:
+      OS_ADDITIONAL_PACKAGES:
+      PIP_REQUIREMENTS:
+      CRON_SCHEDULE: "*/1 * * * *"
+      IMMEDIATE_EXECUTION: true
+      SCRIPT_CONTENT: |
+        from datetime import datetime
+
+        print(f"Current date and time: {datetime.now()}")

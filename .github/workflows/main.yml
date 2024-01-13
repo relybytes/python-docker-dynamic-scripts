@@ -1,0 +1,39 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: ["main"]
+    tags: ["*"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  DOCKER_IMAGE: ghcr.io/relybytes/python-docker-dynamic-scripts
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      # ... [other steps] ...
+      - name: Build and push Docker image for Tags
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:${{ steps.vars.outputs.tag_name }}
+            ${{ env.DOCKER_IMAGE }}:latest
+      - name: Build and push Docker image for Branches
+        if: startsWith(github.ref, 'refs/heads/')
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:latest
+            ${{ env.DOCKER_IMAGE }}:${{ steps.vars.outputs.date }}-${{ steps.vars.outputs.short_sha }}
+            ${{ env.DOCKER_IMAGE }}:${{ steps.vars.outputs.branch_name }}-latest
