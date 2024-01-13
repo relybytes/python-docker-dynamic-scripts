@@ -21,7 +21,7 @@ This example shows how to use the image with Docker Compose:
 version: "3.8"
 services:
   python-app:
-    build: .
+    image: ghcr.io/relybytes/python-docker-dynamic-scripts:latest
     environment:
       OS_ADDITIONAL_PACKAGES:
       PIP_REQUIREMENTS:
