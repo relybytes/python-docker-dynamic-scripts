@@ -54,7 +54,7 @@ spec:
     spec:
       containers:
         - name: python
-          image: ghcr.io/relybytes/nginx-certbot:v1.0.0
+          image: ghcr.io/relybytes/python-docker-dynamic-scripts:latest
           env:
             - name: OS_ADDITIONAL_PACKAGES
               value:
