@@ -1,0 +1,36 @@
+version: "3.8"
+services:
+  python-app:
+    image: ghcr.io/relybytes/python-docker-dynamic-scripts:latest
+    environment:
+      OS_ADDITIONAL_PACKAGES: postgresql-client
+      PIP_REQUIREMENTS:
+      IMMEDIATE_EXECUTION: false
+      CRON_SCHEDULE: "0 1 * * *"
+      SCRIPT_CONTENT: |
+        import subprocess
+        import datetime
+        import os
+
+        # Settings Database
+        db_name = 'db'
+        db_user = 'postgres'
+        host = 'host.docker.internal'
+        port = 5432
+        password = 'password'
+
+        # Backup file settings
+        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        backup_filename = f"{db_name}-{timestamp}.sql"
+        backup_folder = '/tmp'
+        backup_path = os.path.join(backup_folder, backup_filename)
+
+        # Command to run pg_dump
+        pg_dump_cmd = f"pg_dump --dbname=postgresql://{db_user}:{password}@{host}:{port}/{db_name} -f \"{backup_path}\""
+
+        try:
+            # Execute the backup command
+            subprocess.run(pg_dump_cmd, check=True, shell=True)
+            print(f"Backup successful. File created: {backup_path}")
+        except subprocess.CalledProcessError as e:
+            print(f"Error during backup: {e}")
