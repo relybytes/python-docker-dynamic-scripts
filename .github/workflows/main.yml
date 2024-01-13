@@ -8,7 +8,7 @@ on:
     branches: ["main"]
 
 env:
-  DOCKER_IMAGE: ghcr.io/relybytes/python-docker-dynamic-scripts
+  DOCKER_IMAGE_BASE: ghcr.io/relybytes/python-docker-dynamic-scripts
 
 jobs:
   build-and-push-image:
@@ -19,21 +19,35 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      # ... [other steps] ...
+      - name: Define variables
+        id: vars
+        run: |
+          echo "date=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_OUTPUT
+          echo "short_sha=$(echo ${{ github.sha }} | cut -c 1-7)" >> $GITHUB_OUTPUT
+          echo "branch_name=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          echo "tag_name=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
       - name: Build and push Docker image for Tags
         if: startsWith(github.ref, 'refs/tags/')
         uses: docker/build-push-action@v4
         with:
           push: true
           tags: |
-            ${{ env.DOCKER_IMAGE }}:${{ steps.vars.outputs.tag_name }}
-            ${{ env.DOCKER_IMAGE }}:latest
+            ghcr.io/relybytes/nginx-certbot:${{ steps.vars.outputs.tag_name }}
+            ghcr.io/relybytes/nginx-certbot:latest
+      - name: Build and push Docker image for Tags
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE_BASE }}:${{ steps.vars.outputs.tag_name }}
+            ${{ env.DOCKER_IMAGE_BASE }}:latest
       - name: Build and push Docker image for Branches
         if: startsWith(github.ref, 'refs/heads/')
         uses: docker/build-push-action@v4
         with:
           push: true
           tags: |
-            ${{ env.DOCKER_IMAGE }}:latest
-            ${{ env.DOCKER_IMAGE }}:${{ steps.vars.outputs.date }}-${{ steps.vars.outputs.short_sha }}
-            ${{ env.DOCKER_IMAGE }}:${{ steps.vars.outputs.branch_name }}-latest
+            ${{ env.DOCKER_IMAGE_BASE }}:latest
+            ${{ env.DOCKER_IMAGE_BASE }}:${{ steps.vars.outputs.date }}-${{ steps.vars.outputs.short_sha }}
+            ${{ env.DOCKER_IMAGE_BASE }}:${{ steps.vars.outputs.branch_name }}-latest
