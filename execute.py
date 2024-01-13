@@ -13,7 +13,7 @@ def execute_script():
     try:
         start_time = time.time() 
         current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(f"[{current_time}] Execute the script:")
+        print(f"[{current_time}] Start execute the script:")
         exec(script_content)
         current_time_finish = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"[{current_time_finish}] Finish execute the script, duration: {(time.time() - start_time):.2f}s")
@@ -32,6 +32,8 @@ scheduler.add_job(execute_script, CronTrigger.from_crontab(cron_schedule))
 scheduler.start()
 
 if immediate_execution:
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{current_time}] Immediate execute script!")
     execute_script()
 
 try:
