@@ -1,0 +1,82 @@
+version: "3.8"
+services:
+  python-app:
+    image: ghcr.io/relybytes/python-docker-dynamic-scripts:latest
+    environment:
+      OS_ADDITIONAL_PACKAGES: postgresql-client
+      PIP_REQUIREMENTS: |
+        ibm-cos-sdk
+      # Execute a backup every day at 1:00 AM
+      CRON_SCHEDULE: "0 1 * * *"
+      SCRIPT_CONTENT: |
+        import datetime
+        import os
+        import subprocess
+        import ibm_boto3
+        from ibm_botocore.client import Config, ClientError
+
+        # Backup file settings
+        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        db_name = "your_db_name"  
+        db_user = "your_db_user"  # Replace with your database user
+        password = "your_db_password"  # Replace with your database password
+        host = "your_db_host"  # Replace with your database host
+        port = "your_db_port"  # Replace with your database port
+
+        backup_filename = f"{db_name}-{timestamp}.sql"
+        backup_folder = '/tmp'
+        backup_path = os.path.join(backup_folder, backup_filename)
+
+        # IBM S3 settings
+        cos_bucket = "" # Bucket name
+        IBM_ENDPOINT_URL = ""
+        IBM_API_KEY_ID = ""
+        IBM_SERVICE_ISTANCE_ID = ""
+
+        # Path inside the bucket
+        bucket_path = "/"  # You can change this to your desired path within the bucket
+
+        # Create an S3 client
+        cos_client = ibm_boto3.client(service_name='s3', 
+                              ibm_api_key_id=IBM_API_KEY_ID,
+                              ibm_service_instance_id=IBM_SERVICE_ISTANCE_ID,
+                              config=Config(signature_version='oauth'),
+                              endpoint_url=IBM_ENDPOINT_URL)
+
+
+        # Function to upload file to S3
+        def upload_to_s3(cos_client, file_path, bucket_name, bucket_folder, object_name=None):
+            if object_name is None:
+                object_name = os.path.basename(file_path)
+            object_name = os.path.join(bucket_folder, object_name)
+            try:
+                cos_client.upload_file(Filename=file_path, Bucket=bucket_name, Key=object_name)
+                print(f"File {file_path} uploaded to {bucket_name}/{object_name}")
+            except Exception as e:
+                print(f"Unable to upload to S3: {e}")
+
+        # Command to run pg_dump
+        pg_dump_cmd = f"pg_dump --dbname=postgresql://{db_user}:{password}@{host}:{port}/{db_name} -f \"{backup_path}\""
+
+        try:
+            # Execute the backup command
+            subprocess.run(pg_dump_cmd, check=True, shell=True)
+            print(f"Backup successful. File created: {backup_path}")
+
+            # Compress the backup file
+            compressed_backup_filename = f"{backup_filename}.tar.gz"
+            compressed_backup_path = os.path.join(backup_folder, compressed_backup_filename)
+            tar_command = f"tar -czf {compressed_backup_path} -C {backup_folder} {backup_filename}"
+            subprocess.run(tar_command, check=True, shell=True)
+            print(f"Backup compressed. File created: {compressed_backup_path}")
+
+            # Upload the compressed backup to S3
+            upload_to_s3(cos_client, compressed_backup_path, cos_bucket, bucket_path, compressed_backup_filename)
+
+        except ClientError as e:
+            print(f"ClientError during backup or upload: {e}")
+        except subprocess.CalledProcessError as e:
+            print(f"Error during backup or compression: {e}")
+        except Exception as e:
+            # Generic error handler for any other exceptions
+            print(f"An unexpected error occurred: {e}")

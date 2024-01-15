@@ -55,17 +55,13 @@ spec:
       containers:
         - name: python
           image: ghcr.io/relybytes/python-docker-dynamic-scripts:latest
+          resources: {}
           env:
-            - name: OS_ADDITIONAL_PACKAGES
-              value:
-            - name: PIP_REQUIREMENTS
-              value:
             - name: CRON_SCHEDULE
               value: "*/1 * * * *"
             - name: SCRIPT_CONTENT
               value: |
                 from datetime import datetime
-                import some_python_library
 
                 print(f"Current date and time: {datetime.now()}")
 ```

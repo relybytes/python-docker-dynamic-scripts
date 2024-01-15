@@ -6,7 +6,7 @@ services:
       OS_ADDITIONAL_PACKAGES:
       PIP_REQUIREMENTS:
       CRON_SCHEDULE: "*/1 * * * *"
-      IMMEDIATE_EXECUTION: false
+      IMMEDIATE_EXECUTION: true
       SCRIPT_CONTENT: |
         from datetime import datetime
 
